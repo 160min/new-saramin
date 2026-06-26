@@ -5,35 +5,25 @@
 
 👥 팀원 소개 및 역할 분담
 
-이름
-
-파트
-
-담당 역할
-
 김민수 (팀장)
 
-Infra / BE
+PM / Infra / Data / Crawler
 
 프로젝트 총괄, GitHub Flow 운영 관리, CI/CD 배포 파이프라인 구축
 
-[팀원2]
+Python 기반 채용 사이트 크롤링, DB 스키마 설계 및 데이터 적재
+
+김진리
 
 Frontend
 
 Next.js 기반 대시보드 UI/UX 구현, 대시보드 시각화 차트 연동
 
-[팀원3]
+황승환
 
 Backend
 
 Spring Boot 기반 API 서버 개발, 데이터 정제 및 비즈니스 로직 구현
-
-[팀원4]
-
-Data / Crawler
-
-Python 기반 채용 사이트 크롤링, DB 스키마 설계 및 데이터 적재
 
 🛠️ 기술 스택 (Tech Stack)
 
