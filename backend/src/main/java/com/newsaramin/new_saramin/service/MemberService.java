@@ -28,14 +28,16 @@ public class MemberService {
                     throw new IllegalStateException("이미 존재하는 아이디입니다.");
                 });
 
-        String hashedPassword = passwordEncoder.encode(member.getPassword());
-        member.setPassword(hashedPassword);
+        memberRepository.findByEmail(member.getEmail())
+                .ifPresent(m -> {
+                    throw new IllegalStateException("이미 존재하는 이메일입니다.");
+                });
 
+        member.setPassword(passwordEncoder.encode(member.getPassword()));
         memberRepository.save(member);
         return member.getId();
     }
 
-    // 로그인
     public Optional<Member> login(String loginId, String rawPassword) {
         return memberRepository.findByLoginId(loginId)
                 .filter(member -> passwordEncoder.matches(rawPassword, member.getPassword()));

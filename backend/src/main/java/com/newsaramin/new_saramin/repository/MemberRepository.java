@@ -9,5 +9,6 @@ public interface MemberRepository {
     Member save(Member member);
     Optional<Member> findById(Long id);
     Optional<Member> findByLoginId(String loginId);
+    Optional<Member> findByEmail(String email);  // 이메일 중복체크용 추가
     List<Member> findAll();
 }
