@@ -2,52 +2,70 @@ package com.newsaramin.new_saramin.service;
 
 import com.newsaramin.new_saramin.domain.Member;
 import com.newsaramin.new_saramin.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public class MemberService {
 
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
     public MemberService(MemberRepository memberRepository, BCryptPasswordEncoder passwordEncoder) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // 회원가입
+    //회원가입
     public Long join(Member member) {
-        memberRepository.findByLoginId(member.getLoginId())
-                .ifPresent(m -> {
-                    throw new IllegalStateException("이미 존재하는 아이디입니다.");
-                });
+        validateDuplicateLongId(member);
+        validateDuplicateEmail(member);
+        validateDuplicatePhone(member);
 
-        memberRepository.findByEmail(member.getEmail())
-                .ifPresent(m -> {
-                    throw new IllegalStateException("이미 존재하는 이메일입니다.");
-                });
+        String encodedPassword = passwordEncoder.encode(member.getPassword());
+        member.setPassword(encodedPassword);
 
-        member.setPassword(passwordEncoder.encode(member.getPassword()));
         memberRepository.save(member);
         return member.getId();
     }
 
-    public Optional<Member> login(String loginId, String rawPassword) {
-        return memberRepository.findByLoginId(loginId)
-                .filter(member -> passwordEncoder.matches(rawPassword, member.getPassword()));
+    //아아디 중복 검사
+    private void validateDuplicateLongId(Member member) {
+        memberRepository.findByLoginId(member.getLoginId())
+                .ifPresent(m -> {
+                    throw new IllegalStateException("이미 사용중인 아이디입니다.");
+                });
     }
 
+    //이메일 중복 검사
+    private void validateDuplicateEmail(Member member) {
+        memberRepository.findByEmail(member.getEmail())
+                .ifPresent(m -> {
+                    throw new IllegalStateException("이미 사용중인 이메일입니다.");
+                });
+    }
+
+    //전화번호 중복 검사
+    private void validateDuplicatePhone(Member member) {
+        memberRepository.findByPhone(member.getPhone())
+                .ifPresent(m -> {
+                    throw new IllegalStateException("이미 사용중인 전화번호입니다.");
+                });
+    }
+
+    //전체 회원 조회
     public List<Member> findMembers() {
         return memberRepository.findAll();
     }
 
+    //단건 조회 - ID로 찾기
     public Optional<Member> findOne(Long memberId) {
         return memberRepository.findById(memberId);
+    }
+
+    //단건 조회 - 로그인 아이디 찾기
+    public Optional<Member> findByLoginId(String loginId) {
+        return memberRepository.findByLoginId(loginId);
     }
 }

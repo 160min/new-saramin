@@ -1,21 +1,13 @@
-package com.newsaramin.new_saramin.domain;
+package com.newsaramin.new_saramin.controller;
 
-public class Member {
+public class MemberForm {
 
-    private Long id;
     private String loginId;
     private String password;
+    private String passwordConfirm;
     private String email;    // 추가
     private String name;    // 추가
     private String phone;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getLoginId() {
         return loginId;
@@ -31,6 +23,14 @@ public class Member {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPasswordConfirm() {
+        return passwordConfirm;
+    }
+
+    public void setPasswordConfirm(String passwordConfirm) {
+        this.passwordConfirm = passwordConfirm;
     }
 
     public String getEmail() {
