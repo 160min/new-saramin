@@ -19,20 +19,20 @@ public class MemberService {
 
     //회원가입
     public Long join(Member member) {
-        validateDuplicateLongId(member);
+        validateDuplicateUserId(member);
         validateDuplicateEmail(member);
-        validateDuplicatePhone(member);
+        //validateDuplicatePhone(member);
 
-        String encodedPassword = passwordEncoder.encode(member.getPassword());
-        member.setPassword(encodedPassword);
+        String encodedPassword = passwordEncoder.encode(member.getPwd());
+        member.setPwd(encodedPassword);
 
         memberRepository.save(member);
         return member.getId();
     }
 
     //아아디 중복 검사
-    private void validateDuplicateLongId(Member member) {
-        memberRepository.findByLoginId(member.getLoginId())
+    private void validateDuplicateUserId(Member member) {
+        memberRepository.findByUserId(member.getUserId())
                 .ifPresent(m -> {
                     throw new IllegalStateException("이미 사용중인 아이디입니다.");
                 });
@@ -66,6 +66,6 @@ public class MemberService {
 
     //단건 조회 - 로그인 아이디 찾기
     public Optional<Member> findByLoginId(String loginId) {
-        return memberRepository.findByLoginId(loginId);
+        return memberRepository.findByUserId(loginId);
     }
 }
