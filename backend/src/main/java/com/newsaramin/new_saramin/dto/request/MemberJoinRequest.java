@@ -20,7 +20,7 @@ public class MemberJoinRequest {
         member.setPwd(pwd);
         member.setEmail(email);
         member.setNickname(nickname);
-        //member.setPhone(formatPhone(phone));
+        member.setPhone(formatPhone(phone));
         return member;
     }
 

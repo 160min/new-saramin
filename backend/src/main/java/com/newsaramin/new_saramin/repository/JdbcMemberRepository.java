@@ -18,7 +18,7 @@ public class JdbcMemberRepository implements MemberRepository {
 
     @Override
     public Member save(Member member) {
-        String sql = "insert into user(user_id, pwd, email, nickname, role) values(?, ?, ?, ?, 'USER')";
+        String sql = "insert into user(user_id, pwd, email, nickname, phone, role) values(?, ?, ?, ?, ?, 'USER')";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -31,7 +31,7 @@ public class JdbcMemberRepository implements MemberRepository {
             pstmt.setString(2, member.getPwd());
             pstmt.setString(3, member.getEmail());
             pstmt.setString(4, member.getNickname());
-            //pstmt.setString(5, member.getPhone());
+            pstmt.setString(5, member.getPhone());
 
             pstmt.executeUpdate();
 
@@ -196,7 +196,7 @@ public class JdbcMemberRepository implements MemberRepository {
         member.setPwd(rs.getString("pwd"));
         member.setEmail(rs.getString("email"));
         member.setNickname(rs.getString("nickname"));
-        //member.setPhone(rs.getString("phone"));
+        member.setPhone(rs.getString("phone"));
         member.setRole(rs.getString("role"));
         return member;
     }

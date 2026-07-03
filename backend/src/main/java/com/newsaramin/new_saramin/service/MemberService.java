@@ -21,7 +21,7 @@ public class MemberService {
     public Long join(Member member) {
         validateDuplicateUserId(member);
         validateDuplicateEmail(member);
-        //validateDuplicatePhone(member);
+        validateDuplicatePhone(member);
 
         String encodedPassword = passwordEncoder.encode(member.getPwd());
         member.setPwd(encodedPassword);
