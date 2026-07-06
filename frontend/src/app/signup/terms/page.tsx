@@ -29,11 +29,10 @@ const CustomCheckbox = ({
   return (
     <div
       onClick={onChange}
-      className={`w-4 h-4 rounded flex-shrink-0 border-2 cursor-pointer flex items-center justify-center transition-colors ${className} ${
-        checked
-          ? 'bg-[#185FA5] border-[#185FA5]'
-          : 'bg-[#CBD5E1] border-[#CBD5E1]'
-      }`}
+      className={`w-4 h-4 rounded flex-shrink-0 border-2 cursor-pointer flex items-center justify-center transition-colors ${className} ${checked
+        ? 'bg-[#185FA5] border-[#185FA5]'
+        : 'bg-[#CBD5E1] border-[#CBD5E1]'
+        }`}
     >
       {checked && (
         <svg width={10} height={10} viewBox="0 0 12 12" fill="none">
@@ -171,11 +170,10 @@ export default function TermsPage() {
         {/* 다음 버튼 */}
         <button
           onClick={handleNext}
-          className={`w-full h-12 font-bold rounded-lg transition-colors text-white ${
-            terms && privacy
-              ? 'bg-[#185FA5]'
-              : 'bg-[#CBD5E1]'
-          }`}
+          className={`w-full h-12 font-bold rounded-lg transition-colors text-white ${terms && privacy
+            ? 'bg-[#185FA5]'
+            : 'bg-[#CBD5E1]'
+            }`}
         >
           다음
         </button>

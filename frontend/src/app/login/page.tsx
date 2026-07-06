@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { login } from '@/api/auth'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -13,34 +14,31 @@ export default function LoginPage() {
     password: '',
   })
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const newErrors = { id: '', password: '' }
     let hasError = false
 
-    if (!id) {
-      newErrors.id = '아이디를 입력해주세요.'
-      hasError = true
-    }
-    if (!password) {
-      newErrors.password = '비밀번호를 입력해주세요.'
-      hasError = true
-    }
+    if (!id) { newErrors.id = '아이디를 입력해주세요.'; hasError = true }
+    if (!password) { newErrors.password = '비밀번호를 입력해주세요.'; hasError = true }
 
     setErrors(newErrors)
     if (hasError) return
 
-    // 임시 로그인 (백엔드 연결 전)
-    if (id === 'test' && password === '12345678') {
+    try {
+      const result = await login({ id, password })
+
+      if (result.status === 401) {
+        setErrors((prev) => ({ ...prev, password: result.message }))
+        return
+      }
+
+      localStorage.setItem('accessToken', result.accessToken)
       router.push('/')
-    } else {
-      setErrors({
-        id: '',
-        password: '아이디 또는 비밀번호가 올바르지 않습니다.',
-      })
+    } catch {
+      setErrors((prev) => ({ ...prev, password: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }))
     }
   }
 
-  // 엔터키로 로그인
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleLogin()
   }
@@ -86,9 +84,7 @@ export default function LoginPage() {
         {/* 로그인 버튼 */}
         <button
           onClick={handleLogin}
-          className={`w-full h-12 font-bold rounded-lg transition-colors text-white ${
-            id && password ? 'bg-[#185FA5]' : 'bg-[#CBD5E1]'
-          }`}
+          className={`w-full h-12 font-bold rounded-lg transition-colors text-white ${id && password ? 'bg-[#185FA5]' : 'bg-[#CBD5E1]'}`}
         >
           로그인
         </button>

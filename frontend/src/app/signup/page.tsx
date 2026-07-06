@@ -2,9 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-const DUPLICATE_IDS = ['admin', 'test', 'user123']
-const DUPLICATE_NICKNAMES = ['닉네임', 'admin', 'test']
+import { signup, checkId, checkNickname } from '@/api/auth'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -20,7 +18,6 @@ export default function SignupPage() {
   const [idCheck, setIdCheck] = useState<null | boolean>(null)
   const [nicknameCheck, setNicknameCheck] = useState<null | boolean>(null)
 
-  // 에러 메시지 상태
   const [errors, setErrors] = useState({
     name: '',
     email: '',
@@ -41,17 +38,27 @@ export default function SignupPage() {
     setErrors((prev) => ({ ...prev, phone: '' }))
   }
 
-  const handleIdCheck = () => {
+  const handleIdCheck = async () => {
     if (!id) return
-    setIdCheck(!DUPLICATE_IDS.includes(id))
+    try {
+      const result = await checkId(id)
+      setIdCheck(!result.isDuplicate)
+    } catch {
+      setIdCheck(false)
+    }
   }
 
-  const handleNicknameCheck = () => {
+  const handleNicknameCheck = async () => {
     if (!nickname) return
-    setNicknameCheck(!DUPLICATE_NICKNAMES.includes(nickname))
+    try {
+      const result = await checkNickname(nickname)
+      setNicknameCheck(!result.isDuplicate)
+    } catch {
+      setNicknameCheck(false)
+    }
   }
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     const newErrors = {
       name: '',
       email: '',
@@ -59,41 +66,41 @@ export default function SignupPage() {
       password: '',
       passwordCheck: '',
     }
-
     let hasError = false
 
-    if (!name) {
-      newErrors.name = '이름을 입력해주세요.'
-      hasError = true
-    }
-    if (!idCheck) {
-      hasError = true
-    }
-    if (!nicknameCheck) {
-      hasError = true
-    }
+    if (!name) { newErrors.name = '이름을 입력해주세요.'; hasError = true }
+    if (!idCheck) { hasError = true }
+    if (!nicknameCheck) { hasError = true }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = '올바른 이메일 형식을 입력해주세요.'
-      hasError = true
+      newErrors.email = '올바른 이메일 형식을 입력해주세요.'; hasError = true
     }
-    if (!phone) {
-      newErrors.phone = '전화번호를 입력해주세요.'
-      hasError = true
-    }
-    if (password.length < 8) {
-      newErrors.password = '비밀번호는 8자 이상 입력해주세요.'
-      hasError = true
-    }
-    if (password !== passwordCheck) {
-      newErrors.passwordCheck = '비밀번호가 일치하지 않습니다.'
-      hasError = true
-    }
+    if (!phone) { newErrors.phone = '전화번호를 입력해주세요.'; hasError = true }
+    if (password.length < 8) { newErrors.password = '비밀번호는 8자 이상 입력해주세요.'; hasError = true }
+    if (password !== passwordCheck) { newErrors.passwordCheck = '비밀번호가 일치하지 않습니다.'; hasError = true }
 
     setErrors(newErrors)
     if (hasError) return
 
-    alert('회원가입이 완료되었습니다!')
-    router.push('/')
+    try {
+      const result = await signup({
+        userId: id,
+        password,
+        passwordCheck,
+        name,
+        email,
+        nickname,
+        phone,
+      })
+
+      if (result.status === 409 || result.status === 400) {
+        setErrors((prev) => ({ ...prev, password: result.message }))
+        return
+      }
+
+      router.push('/login')
+    } catch {
+      setErrors((prev) => ({ ...prev, password: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }))
+    }
   }
 
   const isAllFilled = id && name && nickname && email && phone && password && passwordCheck && idCheck && nicknameCheck
@@ -163,7 +170,6 @@ export default function SignupPage() {
           </div>
           {idCheck === true && <p className="text-xs text-[#185FA5] mt-1.5 font-medium">사용 가능한 아이디입니다</p>}
           {idCheck === false && <p className="text-xs text-red-400 mt-1.5 font-medium">이미 사용중인 아이디입니다</p>}
-          {idCheck === null && id === '' && errors.name === '' && !name && <p className="text-xs text-red-400 mt-1.5 font-medium"></p>}
         </div>
 
         {/* 이메일 */}
