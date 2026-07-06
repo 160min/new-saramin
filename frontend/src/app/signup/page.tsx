@@ -3,9 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+const DUPLICATE_IDS = ['admin', 'test', 'user123']
+const DUPLICATE_NICKNAMES = ['닉네임', 'admin', 'test']
+
 export default function SignupPage() {
   const router = useRouter()
 
+  const [id, setId] = useState('')
   const [name, setName] = useState('')
   const [nickname, setNickname] = useState('')
   const [email, setEmail] = useState('')
@@ -13,7 +17,18 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [passwordCheck, setPasswordCheck] = useState('')
 
-  // 전화번호 자동 하이픈 추가
+  const [idCheck, setIdCheck] = useState<null | boolean>(null)
+  const [nicknameCheck, setNicknameCheck] = useState<null | boolean>(null)
+
+  // 에러 메시지 상태
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    passwordCheck: '',
+  })
+
   const handlePhone = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '')
     if (numbers.length <= 3) {
@@ -23,29 +38,65 @@ export default function SignupPage() {
     } else {
       setPhone(`${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`)
     }
+    setErrors((prev) => ({ ...prev, phone: '' }))
   }
 
-  // 회원가입 버튼 클릭
+  const handleIdCheck = () => {
+    if (!id) return
+    setIdCheck(!DUPLICATE_IDS.includes(id))
+  }
+
+  const handleNicknameCheck = () => {
+    if (!nickname) return
+    setNicknameCheck(!DUPLICATE_NICKNAMES.includes(nickname))
+  }
+
   const handleSignup = () => {
-    if (!name || !nickname || !email || !phone || !password || !passwordCheck) {
-      alert('모든 항목을 입력해주세요.')
-      return
+    const newErrors = {
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      passwordCheck: '',
     }
-    if (!email.includes('@')) {
-      alert('이메일 형식이 올바르지 않습니다.')
-      return
+
+    let hasError = false
+
+    if (!name) {
+      newErrors.name = '이름을 입력해주세요.'
+      hasError = true
+    }
+    if (!idCheck) {
+      hasError = true
+    }
+    if (!nicknameCheck) {
+      hasError = true
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = '올바른 이메일 형식을 입력해주세요.'
+      hasError = true
+    }
+    if (!phone) {
+      newErrors.phone = '전화번호를 입력해주세요.'
+      hasError = true
     }
     if (password.length < 8) {
-      alert('비밀번호는 8자 이상 입력해주세요.')
-      return
+      newErrors.password = '비밀번호는 8자 이상 입력해주세요.'
+      hasError = true
     }
     if (password !== passwordCheck) {
-      alert('비밀번호가 일치하지 않습니다.')
-      return
+      newErrors.passwordCheck = '비밀번호가 일치하지 않습니다.'
+      hasError = true
     }
+
+    setErrors(newErrors)
+    if (hasError) return
+
     alert('회원가입이 완료되었습니다!')
     router.push('/')
   }
+
+  const isAllFilled = id && name && nickname && email && phone && password && passwordCheck && idCheck && nicknameCheck
 
   return (
     <div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center px-4">
@@ -59,38 +110,78 @@ export default function SignupPage() {
 
         {/* 이름 + 닉네임 */}
         <div className="flex gap-3 mb-4">
-          <div className="flex-1">
+          <div className="w-[35%]">
             <label className="block text-xs font-medium text-[#475569] mb-1">이름</label>
             <input
               type="text"
               placeholder="홍길동"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full h-11 px-3 text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5]"
+              onChange={(e) => { setName(e.target.value); setErrors((prev) => ({ ...prev, name: '' })) }}
+              className={`w-full h-11 px-3 text-sm border rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5] ${errors.name ? 'border-red-400' : 'border-[#E2E8F0]'}`}
             />
+            {errors.name && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.name}</p>}
           </div>
           <div className="flex-1">
             <label className="block text-xs font-medium text-[#475569] mb-1">닉네임</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="nick123"
+                value={nickname}
+                onChange={(e) => { setNickname(e.target.value); setNicknameCheck(null) }}
+                className="w-[190px] h-11 px-3 text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5]"
+              />
+              <button
+                onClick={handleNicknameCheck}
+                className={`w-20 h-11 text-white text-xs font-bold rounded-lg shrink-0 ${nickname ? 'bg-[#185FA5]' : 'bg-[#CBD5E1]'}`}
+              >
+                중복확인
+              </button>
+            </div>
+            {nicknameCheck === true && <p className="text-xs text-[#185FA5] mt-1.5 font-medium">사용 가능합니다</p>}
+            {nicknameCheck === false && <p className="text-xs text-red-400 mt-1.5 font-medium">이미 사용중입니다</p>}
+          </div>
+        </div>
+
+        {/* 아이디 */}
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-[#475569] mb-1">아이디</label>
+          <div className="flex gap-2">
             <input
               type="text"
-              placeholder="nick123"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="w-full h-11 px-3 text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5]"
+              placeholder="아이디를 입력하세요"
+              value={id}
+              onChange={(e) => { setId(e.target.value); setIdCheck(null) }}
+              className="flex-1 h-11 px-3 text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5]"
             />
+            <button
+              onClick={handleIdCheck}
+              className={`w-20 h-11 text-white text-xs font-bold rounded-lg shrink-0 ${id ? 'bg-[#185FA5]' : 'bg-[#CBD5E1]'}`}
+            >
+              중복확인
+            </button>
           </div>
+          {idCheck === true && <p className="text-xs text-[#185FA5] mt-1.5 font-medium">사용 가능한 아이디입니다</p>}
+          {idCheck === false && <p className="text-xs text-red-400 mt-1.5 font-medium">이미 사용중인 아이디입니다</p>}
+          {idCheck === null && id === '' && errors.name === '' && !name && <p className="text-xs text-red-400 mt-1.5 font-medium"></p>}
         </div>
 
         {/* 이메일 */}
         <div className="mb-4">
           <label className="block text-xs font-medium text-[#475569] mb-1">이메일</label>
-          <input
-            type="email"
-            placeholder="example@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full h-11 px-3 text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5]"
-          />
+          <div className="flex gap-2">
+            <input
+              type="email"
+              placeholder="example@email.com"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: '' })) }}
+              className={`flex-1 h-11 px-3 text-sm border rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5] ${errors.email ? 'border-red-400' : 'border-[#E2E8F0]'}`}
+            />
+            <button className={`w-20 h-11 text-white text-xs font-bold rounded-lg shrink-0 ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'bg-[#185FA5]' : 'bg-[#CBD5E1]'}`}>
+              인증하기
+            </button>
+          </div>
+          {errors.email && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.email}</p>}
         </div>
 
         {/* 전화번호 */}
@@ -101,8 +192,9 @@ export default function SignupPage() {
             placeholder="010-0000-0000"
             value={phone}
             onChange={(e) => handlePhone(e.target.value)}
-            className="w-full h-11 px-3 text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5]"
+            className={`w-full h-11 px-3 text-sm border rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5] ${errors.phone ? 'border-red-400' : 'border-[#E2E8F0]'}`}
           />
+          {errors.phone && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.phone}</p>}
         </div>
 
         {/* 비밀번호 */}
@@ -112,9 +204,10 @@ export default function SignupPage() {
             type="password"
             placeholder="8자 이상 입력"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full h-11 px-3 text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5]"
+            onChange={(e) => { setPassword(e.target.value); setErrors((prev) => ({ ...prev, password: '' })) }}
+            className={`w-full h-11 px-3 text-sm border rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5] ${errors.password ? 'border-red-400' : 'border-[#E2E8F0]'}`}
           />
+          {errors.password && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.password}</p>}
         </div>
 
         {/* 비밀번호 확인 */}
@@ -124,19 +217,16 @@ export default function SignupPage() {
             type="password"
             placeholder="비밀번호를 다시 입력하세요"
             value={passwordCheck}
-            onChange={(e) => setPasswordCheck(e.target.value)}
-            className="w-full h-11 px-3 text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5]"
+            onChange={(e) => { setPasswordCheck(e.target.value); setErrors((prev) => ({ ...prev, passwordCheck: '' })) }}
+            className={`w-full h-11 px-3 text-sm border rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5] ${errors.passwordCheck ? 'border-red-400' : 'border-[#E2E8F0]'}`}
           />
+          {errors.passwordCheck && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.passwordCheck}</p>}
         </div>
 
         {/* 회원가입 버튼 */}
         <button
           onClick={handleSignup}
-          className={`w-full h-12 font-bold rounded-lg transition-colors text-white ${
-            name && nickname && email && phone && password && passwordCheck
-              ? 'bg-[#185FA5]'
-              : 'bg-[#CBD5E1]'
-          }`}
+          className={`w-full h-12 font-bold rounded-lg transition-colors text-white ${isAllFilled ? 'bg-[#185FA5]' : 'bg-[#CBD5E1]'}`}
         >
           회원가입
         </button>
