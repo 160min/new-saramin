@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signup, checkId, checkNickname } from '@/api/auth'
+import { signup, checkId, checkNickname, checkEmail } from '@/api/auth'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -17,6 +17,8 @@ export default function SignupPage() {
 
   const [idCheck, setIdCheck] = useState<null | boolean>(null)
   const [nicknameCheck, setNicknameCheck] = useState<null | boolean>(null)
+  const [emailMessage, setEmailMessage] = useState('')
+  const [emailAvailable, setEmailAvailable] = useState(false)
 
   const [errors, setErrors] = useState({
     name: '',
@@ -48,6 +50,18 @@ export default function SignupPage() {
     }
   }
 
+  const handleEmailCheck = async () => {
+    if (!email) return
+    try {
+      const result = await checkEmail(email)
+      setEmailAvailable(!result.isDuplicate)
+      setEmailMessage('')
+    } catch {
+      setEmailAvailable(false)
+      setEmailMessage('이메일 체크 중 오류가 발생했습니다.')
+    }
+  }
+
   const handleNicknameCheck = async () => {
     if (!nickname) return
     try {
@@ -56,6 +70,16 @@ export default function SignupPage() {
     } catch {
       setNicknameCheck(false)
     }
+  }
+
+  const handleCheckEmail = async () => {
+    if (!email) {
+      setEmailMessage('이메일을 입력해주세요.')
+      return
+    }
+    const result = await checkEmail(email)
+    setEmailAvailable(result.available)
+    setEmailMessage(result.message)
   }
 
   const handleSignup = async () => {
@@ -183,11 +207,19 @@ export default function SignupPage() {
               onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: '' })) }}
               className={`flex-1 h-11 px-3 text-sm border rounded-lg bg-[#F8FAFC] focus:outline-none focus:border-[#185FA5] ${errors.email ? 'border-red-400' : 'border-[#E2E8F0]'}`}
             />
-            <button className={`w-20 h-11 text-white text-xs font-bold rounded-lg shrink-0 ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'bg-[#185FA5]' : 'bg-[#CBD5E1]'}`}>
+            <button
+              onClick={handleCheckEmail}
+              className={`w-20 h-11 text-white text-xs font-bold rounded-lg shrink-0 ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'bg-[#185FA5]' : 'bg-[#CBD5E1]'}`}
+            >
               인증하기
             </button>
           </div>
           {errors.email && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.email}</p>}
+          {emailMessage && (
+            <p className={`text-xs mt-1.5 font-medium ${emailAvailable ? 'text-[#185FA5]' : 'text-red-400'}`}>
+              {emailMessage}
+            </p>
+          )}
         </div>
 
         {/* 전화번호 */}
