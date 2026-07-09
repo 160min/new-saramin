@@ -42,3 +42,9 @@ export const checkNickname = async (nickname: string) => {
   const response = await fetch(`${BASE_URL}/api/member/check-nickname?nickname=${nickname}`)
   return response.json()
 }
+
+// 이메일 중복 체크
+export const checkEmail = async (email: string) => {
+  const response = await fetch(`${BASE_URL}/api/member/check-email?email=${email}`)
+  return response.json()
+}
