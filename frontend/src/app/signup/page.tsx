@@ -41,14 +41,14 @@ export default function SignupPage() {
   }
 
   const handleIdCheck = async () => {
-    if (!id) return
-    try {
-      const result = await checkId(id)
-      setIdCheck(!result.isDuplicate)
-    } catch {
-      setIdCheck(false)
-    }
+  if (!id) return
+  try {
+    const result = await checkId(id)
+    setIdCheck(result.available)
+  } catch {
+    setIdCheck(false)
   }
+}
 
   const handleEmailCheck = async () => {
     if (!email) return
@@ -63,14 +63,14 @@ export default function SignupPage() {
   }
 
   const handleNicknameCheck = async () => {
-    if (!nickname) return
-    try {
-      const result = await checkNickname(nickname)
-      setNicknameCheck(!result.isDuplicate)
-    } catch {
-      setNicknameCheck(false)
-    }
+  if (!nickname) return
+  try {
+    const result = await checkNickname(nickname)
+    setNicknameCheck(result.available)
+  } catch {
+    setNicknameCheck(false)
   }
+}
 
   const handleCheckEmail = async () => {
     if (!email) {
